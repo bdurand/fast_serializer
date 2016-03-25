@@ -235,7 +235,7 @@ module FastSerializer
     end
   
     # Serialize the wrapped object into a format suitable for passing to a JSON parser.
-    def as_json
+    def as_json(*args)
       return nil unless object
       unless @_serialized
         @_serialized = (cacheable? ? load_from_cache : load_hash).freeze
