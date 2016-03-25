@@ -50,7 +50,13 @@ module FastSerializer
     end
     
     def as_json(*args)
-      super[:array]
+      if array.nil?
+        nil
+      elsif array.empty?
+        []
+      else
+        super[:array]
+      end
     end
     
     undef :to_hash
