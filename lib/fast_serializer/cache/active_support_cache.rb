@@ -13,18 +13,9 @@ module FastSerializer
     end
     
     def fetch_all(serializers, ttl)
-      keys = []
-      key_map = {}
-      serializers.each do |serializer|
-        key = serializer.cache_key
-        keys << key
-        key_map[key] = serializer
-      end
-      values = @cache.fetch_multi(keys) do |key|
-        serializer = key_map[key]
+      @cache.fetch_multi(*serializers) do |serializer|
         yield(serializer)
       end
-      keys.collect{|key| values[key]}
     end
   end
 end
