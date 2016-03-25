@@ -63,6 +63,17 @@ module FastSerializer
     undef :to_h
     alias :to_a :as_json
     
+    protected
+    
+    def load_from_cache
+      if cache
+        values = cache.fetch_all(array, cache_ttl){|serializer| serializer.as_json}
+        {:array => values}
+      else
+        load_hash
+      end
+    end
+    
     private
     
     def array

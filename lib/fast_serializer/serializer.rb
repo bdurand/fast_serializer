@@ -299,7 +299,7 @@ module FastSerializer
     end
     alias_method :eql?, :==
     
-    private
+    protected
     
     # Load the hash that will represent the wrapped object as a serialized object.
     def load_hash
@@ -320,6 +320,19 @@ module FastSerializer
       hash
     end
     
+    # Load the hash that will represent the wrapped object as a serialized object from a cache.
+    def load_from_cache
+      if cache
+        cache.fetch(self, cache_ttl) do
+          load_hash
+        end
+      else
+        load_hash
+      end
+    end
+    
+    private
+    
     # Return a list of optional fields to be included in the output from the :include option.
     def included_optional_fields
       included_fields = option(:include)
@@ -337,16 +350,6 @@ module FastSerializer
         Array(excluded_fields).collect(&:to_sym)
       else
         nil
-      end
-    end
-    
-    def load_from_cache
-      if cache
-        cache.fetch(self, cache_ttl) do
-          load_hash
-        end
-      else
-        load_hash
       end
     end
   end
