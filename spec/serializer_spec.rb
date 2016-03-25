@@ -92,14 +92,13 @@ describe FastSerializer::Serializer do
     other_model = SimpleModel.new(:id => 3, :name => "other")
     complex = SimpleModel.new(:id => 2, :name => :complex, :parent => model, :associations => [model, other_model])
     serializer = ComplexSerializer.new(complex, :serial_number => 15)
-    json = serializer.to_json
-    expect(JSON.load(json)).to eq({
-      "id" => 2, "name" => "complex", "validated" => false, "serial_number" => 15,
-      "associations" => [
-        {"id" => 1, "name" => "foo", "validated" => false},
-        {"id" => 3, "name" => "other", "validated" => false}
+    expect(serializer.as_json).to eq({
+      :id => 2, :name => :complex, :validated => false, :serial_number => 15,
+      :associations => [
+        {:id => 1, :name => "foo", :validated => false},
+        {:id => 3, :name => "other", :validated => false}
       ],
-      "parent" => {"id" => 1, "name" => "foo", "validated" => false}
+      :parent => {:id => 1, :name => "foo", :validated => false}
     })
   end
   
