@@ -117,6 +117,17 @@ module FastSerializer
         end
       end
       
+      # Remove a field from being serialized. This can be useful in subclasses if they need to remove a
+      # field defined by the parent class.
+      def remove(*fields)
+        remove_fields = fields.collect(&:to_sym)
+        field_list = []
+        serializable_fields.each do |existing_field|
+          field_list << existing_field unless remove_fields.include?(existing_field.name)
+        end
+        @serializable_fields = field_list.freeze
+      end
+      
       # Specify the cacheability of the serializer.
       #
       # You can specify the cacheable state (defaults to true) of the class. Subclasses will inherit the

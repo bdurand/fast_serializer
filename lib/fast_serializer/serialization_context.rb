@@ -28,6 +28,7 @@ module FastSerializer
     
     def initialize
       @cache = nil
+      @references = nil
     end
     
     # Returns a serializer from the context cache if a duplicate has already
@@ -48,6 +49,22 @@ module FastSerializer
       end
       
       serializer
+    end
+    
+    # Maintain reference stack to avoid circular references.
+    def with_reference(object)
+      if @references
+        raise CircularReferenceError.new(object) if @references.include?(object)
+      else
+        @references = []
+      end
+      
+      begin
+        @references.push(object)
+        yield
+      ensure
+        @references.pop
+      end
     end
   end
 end

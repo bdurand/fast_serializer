@@ -26,7 +26,12 @@ module FastSerializer
         else
           serializer = @serializer.new(value, @serializer_options)
         end
-        serializer.as_json
+        context = SerializationContext.current
+        if context
+          context.with_reference(value){ serializer.as_json }
+        else
+          serializer.as_json
+        end
       else
         serialize_value(value)
       end

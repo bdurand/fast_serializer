@@ -27,4 +27,11 @@ module FastSerializer
       @cache = cache
     end
   end
+  
+  # Exception raised when there is a circular reference serializing a model dependent on itself.
+  class CircularReferenceError < StandardError
+    def initialize(model)
+      super("Circular refernce on #{model.inspect}")
+    end
+  end
 end

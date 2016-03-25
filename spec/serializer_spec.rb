@@ -135,5 +135,12 @@ describe FastSerializer::Serializer do
   it "should return nil value for options if none are set" do
     serializer = CachedSerializer.new(model, nil)
     expect(serializer.option(:foo)).to eq nil
-  end  
+  end
+  
+  it "should not get into infinite loops" do
+    model = SimpleModel.new(:id => 1)
+    model.parent = model
+    serializer = CircularSerializer.new(model)
+    expect{ serializer.as_json }.to raise_error(FastSerializer::CircularReferenceError)
+  end
 end

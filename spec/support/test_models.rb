@@ -1,5 +1,6 @@
 class SimpleModel
-  attr_reader :id, :name, :description, :associations, :parent, :number
+  attr_reader :id, :name, :description, :associations, :number
+  attr_accessor :parent
   
   def initialize(attributes = {})
     @id = attributes[:id]
@@ -57,3 +58,7 @@ class ComplexSerializer < SimpleSerializer
   end
 end
 
+class CircularSerializer < SimpleSerializer
+  remove :name, :validated
+  serialize :parent, serializer: self
+end
