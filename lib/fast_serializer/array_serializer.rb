@@ -15,6 +15,10 @@ module FastSerializer
       super[:array]
     end
     
+    undef :to_hash
+    undef :to_h
+    alias :to_a :as_json
+    
     private
     
     def array

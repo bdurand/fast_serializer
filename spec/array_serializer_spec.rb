@@ -33,5 +33,18 @@ describe FastSerializer::ArraySerializer do
       {"id" => 2, "name" => "bar", "validated" => false, "description" => nil}
     ]
   end
+  
+  it "should not respond to_hash methods" do
+    array = [1, 2, 3]
+    serializer = FastSerializer::ArraySerializer.new(array)
+    expect(serializer.respond_to?(:to_hash)).to eq false
+    expect(serializer.respond_to?(:to_h)).to eq false
+  end
+  
+  it "should respond to to_a" do
+    array = [1, 2, 3]
+    serializer = FastSerializer::ArraySerializer.new(array)
+    expect(serializer.to_a).to eq array
+  end
 
 end
