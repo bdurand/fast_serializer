@@ -11,7 +11,7 @@ module FastSerializer
       super(Array(object), options)
     end
     
-    def as_json
+    def as_json(*args)
       super[:array]
     end
     

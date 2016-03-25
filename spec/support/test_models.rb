@@ -15,7 +15,7 @@ class SimpleModel
     !!@validated
   end
   
-  def as_json
+  def as_json(*args)
     {:id => @id, :name => @name, :description => @description, :number => @number}
   end
 end
