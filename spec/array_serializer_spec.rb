@@ -46,5 +46,14 @@ describe FastSerializer::ArraySerializer do
     serializer = FastSerializer::ArraySerializer.new(array)
     expect(serializer.to_a).to eq array
   end
+  
+  it "should pull cacheable serializers from a cache" do
+    model_1 = SimpleModel.new(:id => 1, :name => "foo")
+    model_2 = SimpleModel.new(:id => 2, :name => "bar")
+    serializer = FastSerializer::ArraySerializer.new([model_1, model_2], serializer: CachedSerializer)
+    expect(serializer.cacheable?).to eq true
+    already_cached_json = CachedSerializer.new(model_1).as_json
+    expect(serializer.as_json.collect(&:object_id)).to eq [already_cached_json.object_id, CachedSerializer.new(model_2).as_json.object_id]
+  end
 
 end
