@@ -143,4 +143,6 @@ end
 FastSerializer.cache = MyCache.new # Must be an implementation of FastSerializer::Cache
 ```
 
-TODO benchmarks
+## Performance
+
+Your mileage may vary. In many cases the performance of the serialization code doesn't particularly matter and this gem performs just about as well as other solutions. However, if you do have high throughput API or can utilize the caching features or have heavily nested models in your JSON responses, then the performance increase may be noticeable.
