@@ -19,18 +19,18 @@ module FastSerializer
           end
         end
       end
-      
+
       # Return the current context or nil if none is in use.
       def current
         Thread.current[:fast_serializer_context]
       end
     end
-    
+
     def initialize
       @cache = nil
       @references = nil
     end
-    
+
     # Returns a serializer from the context cache if a duplicate has already
     # been created. Otherwise creates the serializer and adds it to the
     # cache.
@@ -40,17 +40,17 @@ module FastSerializer
       if @cache
         serializer = @cache[key]
       end
-      
+
       unless serializer
         serializer = serializer_class.allocate
         serializer.send(:initialize, object, options)
         @cache ||= {}
         @cache[key] = serializer
       end
-      
+
       serializer
     end
-    
+
     # Maintain reference stack to avoid circular references.
     def with_reference(object)
       if @references
@@ -58,7 +58,7 @@ module FastSerializer
       else
         @references = []
       end
-      
+
       begin
         @references.push(object)
         yield

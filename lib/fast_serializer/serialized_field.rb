@@ -2,7 +2,7 @@ module FastSerializer
   # Data structure used internally for maintaining a field to be serialized.
   class SerializedField
     attr_reader :name
-  
+
     def initialize(name, optional: false, serializer: nil, serializer_options: nil, enumerable: false)
       @name = name
       @optional = !!optional
@@ -12,11 +12,11 @@ module FastSerializer
         @enumerable = enumerable
       end
     end
-  
+
     def optional?
       @optional
     end
-    
+
     # Wrap a value in the serializer if one has been set. Otherwise just returns the raw value.
     def serialize(value)
       if value && @serializer
@@ -36,9 +36,9 @@ module FastSerializer
         serialize_value(value)
       end
     end
-    
+
     private
-    
+
     # Convert the value to primitive data types: string, number, boolean, symbol, time, date, array, hash.
     def serialize_value(value)
       if value.is_a?(String) || value.is_a?(Numeric) || value == nil || value == true || value == false || value.is_a?(Time) || value.is_a?(Date) || value.is_a?(Symbol)
@@ -73,6 +73,6 @@ module FastSerializer
         value
       end
     end
-    
+
   end
 end

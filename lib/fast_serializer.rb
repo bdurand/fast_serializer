@@ -9,25 +9,34 @@ module FastSerializer
   require_relative 'fast_serializer/serialized_field'
   require_relative 'fast_serializer/serializer'
   require_relative 'fast_serializer/array_serializer'
-  
+
   class << self
+    @cache = nil
+
     # Get the global cache implementation used for storing cacheable serializers.
     def cache
-      @cache if defined?(@cache)
+      @cache
     end
-  
+
     # Set the global cache implementation used for storing cacheable serializers.
-    # The cache implementation should implement the +fetch+ method as defined in 
+    # The cache implementation should implement the +fetch+ method as defined in
     # FastSerializer::Cache. By default no cache is set so caching won't do anything.
     #
     # In a Rails app, you can initialize the cache by simply passing in the value :rails
-    # to use the default Rails.cache.
+    # to use the default Rails.cache. You can also directly pass in an ActiveSupportCache::Store.
     def cache=(cache)
-      cache = Cache::ActiveSupportCache.new(Rails.cache) if cache == :rails
+      if cache == :rails
+        cache = Cache::ActiveSupportCache.new(Rails.cache)
+      elsif defined?(ActiveSupport::Cache::Store) && cache.is_a?(ActiveSupport::Cache::Store)
+        cache = Cache::ActiveSupportCache.new(cache)
+      end
+      if cache && !cache.is_a?(FastSerializer::Cache)
+        raise ArgumentError.new("The cache must be a FastSerializer::Cache or ActiveSupport::Cache::Store")
+      end
       @cache = cache
     end
   end
-  
+
   # Exception raised when there is a circular reference serializing a model dependent on itself.
   class CircularReferenceError < StandardError
     def initialize(model)

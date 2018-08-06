@@ -7,7 +7,7 @@ For these examples we'll assume we have a simple Person class.
 ```ruby
 class Person
   attr_accessor :id, :first_name, :last_name, :parents, :children
-  
+
   def intitialize(attributes = {})
     @id = attributes[:id]
     @first_name = attributes[:first_name]
@@ -16,7 +16,7 @@ class Person
     @parent = attributes[:parents]
     @children = attributes[:children] || {}
   end
-  
+
   def ==(other)
     other.instance_of?(self.class) && other.id == id
   end
@@ -31,7 +31,7 @@ ruby```
 class PersonSerializer
   include FastSerializer::Serializer
   serialize :id, :name
-  
+
   def name
     "#{object.first_name} #{object.last_name}"
   end
@@ -47,7 +47,7 @@ class PersonSerializer
   include FastSerializer::Serializer
   serialize :id, as: :person_id
   serialize :name, :delegate => false
-  
+
   def name
     "#{object.first_name} #{object.last_name}"
   end
@@ -65,7 +65,7 @@ class PersonSerializer
   serialize :name, :delegate => false
   serialize :parent, serializer: PersonSerializer
   serialize :children, serializer: PersonSerializer, enumerable: true
-  
+
   def name
     "#{object.first_name} #{object.last_name}"
   end
@@ -81,6 +81,8 @@ PersonSerializer.new(person).as_json # => {
                                      #    }
 ```
 
+### Optional and excluding fields
+
 Serializer can have optional fields. You can also specify fields to exclude.
 
 ```ruby
@@ -89,7 +91,7 @@ class PersonSerializer
   serialize :id
   serialize :name, :delegate => false
   serialize :gender, optional: true
-  
+
   def name
     "#{object.first_name} #{object.last_name}"
   end
@@ -100,6 +102,8 @@ PersonSerializer.new(person, :include => [:gender]).as_json # => {:id => 1, :nam
 PersonSerializer.new(person, :exclude => [:id]).as_json # => {:name => "John Doe"}
 ```
 
+### Serializer options
+
 You can specify custom options that control how the object is serialized.
 
 ```ruby
@@ -107,7 +111,7 @@ class PersonSerializer
   include FastSerializer::Serializer
   serialize :id
   serialize :name, :delegate => false
-  
+
   def name
     if option(:last_first)
       "#{object.last_name}, #{object.first_name}"
@@ -118,8 +122,10 @@ class PersonSerializer
 end
 
 PersonSerializer.new(person).as_json # => {:id => 1, :name => "John Doe"}
-PersonSerializer.new(person, :last_first).as_json # => {:id => 1, :name => "Doe, John"}
+PersonSerializer.new(person, :last_first => true).as_json # => {:id => 1, :name => "Doe, John"}
 ```
+
+### Caching
 
 You can make serializers cacheable so that the serialized value can be stored and fetched from a cache.
 
@@ -128,9 +134,9 @@ class PersonSerializer
   include FastSerializer::Serializer
   serialize :id
   serialize :name, :delegate => false
-  
+
   cacheable true, ttl: 60
-  
+
   def name
     if option(:last_first)
       "#{object.last_name}, #{object.first_name}"
@@ -141,6 +147,21 @@ class PersonSerializer
 end
 
 FastSerializer.cache = MyCache.new # Must be an implementation of FastSerializer::Cache
+```
+
+For Rails application, you can run this in an initializer to tell `FastSerializer` to use `Rails.cache`
+
+```ruby
+FastSerializer.cache = :rails
+```
+
+You can also pass a cache to a serializer using the `:cache` option.
+
+### Collections
+
+If you have a collection of objects to serialize, you can use the `FastSerializer::ArraySerializer` to serialize an enumeration of objects.
+
+```ruby
 ```
 
 ## Performance

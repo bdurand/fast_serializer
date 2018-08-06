@@ -4,13 +4,13 @@ module FastSerializer
   # for caching duplicate serializers.
   class ArraySerializer
     include Serializer
-    
+
     serialize :array
-    
+
     def initialize(object, options = nil)
       super(Array(object), options)
     end
-    
+
     def cache_key
       if option(:serializer)
         array.collect(&:cache_key)
@@ -18,7 +18,7 @@ module FastSerializer
         super
       end
     end
-    
+
     def cacheable?
       if option(:cacheable) || self.class.cacheable?
         true
@@ -28,7 +28,7 @@ module FastSerializer
         super
       end
     end
-    
+
     def cache_ttl
       if option(:cache_ttl)
         true
@@ -38,7 +38,7 @@ module FastSerializer
         super
       end
     end
-    
+
     def cache
       if option(:cache)
         true
@@ -48,7 +48,7 @@ module FastSerializer
         super
       end
     end
-    
+
     def as_json(*args)
       if array.nil?
         nil
@@ -58,13 +58,13 @@ module FastSerializer
         super[:array]
       end
     end
-    
+
     undef :to_hash
     undef :to_h
     alias :to_a :as_json
-    
+
     protected
-    
+
     def load_from_cache
       if cache
         values = cache.fetch_all(array, cache_ttl){|serializer| serializer.as_json}
@@ -73,9 +73,9 @@ module FastSerializer
         load_hash
       end
     end
-    
+
     private
-    
+
     def array
       unless defined?(@_array)
         serializer = option(:serializer)

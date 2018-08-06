@@ -55,17 +55,17 @@ module FastSerializer
   #
   # Serializing a nil object will result in nil rather than an empty hash.
   module Serializer
-      
+
     def self.included(base)
       base.extend(ClassMethods)
     end
-    
+
     # Return the wrapped object that is being serialized.
     attr_reader :object
-    
+
     # Return the options hash (if any) that specified optional details about how to serialize the object.
     attr_reader :options
-    
+
     module ClassMethods
       # Define one or more fields to include in the serialized object. Field values will be gotten
       # by calling the method of the same name on class including this module.
@@ -100,23 +100,23 @@ module FastSerializer
         if as && fields.size > 1
           raise ArgumentError.new("Cannot specify :as argument with multiple fields to serialize")
         end
-        
+
         fields.each do |field|
           name = as
           if name.nil? && field.to_s.end_with?("?".freeze)
             name = field.to_s.chomp("?".freeze)
           end
-          
+
           field = field.to_sym
           attribute = (name || field).to_sym
           add_field(attribute, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable)
-          
+
           if delegate && !method_defined?(attribute)
             define_delegate(attribute, field)
           end
         end
       end
-      
+
       # Remove a field from being serialized. This can be useful in subclasses if they need to remove a
       # field defined by the parent class.
       def remove(*fields)
@@ -127,11 +127,11 @@ module FastSerializer
         end
         @serializable_fields = field_list.freeze
       end
-      
+
       # Specify the cacheability of the serializer.
       #
       # You can specify the cacheable state (defaults to true) of the class. Subclasses will inherit the
-      # cacheable state of their parent class, so if you have non-cacheable serializer subclassing a 
+      # cacheable state of their parent class, so if you have non-cacheable serializer subclassing a
       # cacheable parent class, you can call <tt>cacheable false</tt> to override the parent behavior.
       #
       # You can also specify the cache time to live (ttl) in seconds and the cache implementation to use.
@@ -141,7 +141,7 @@ module FastSerializer
         self.cache_ttl = ttl if ttl
         self.cache = cache if cache
       end
-      
+
       # Return true if the serializer class is cacheable.
       def cacheable?
         unless defined?(@cacheable)
@@ -149,7 +149,7 @@ module FastSerializer
         end
         !!@cacheable
       end
-      
+
       # Return the time to live in seconds for a cacheable serializer.
       def cache_ttl
         if defined?(@cache_ttl)
@@ -160,12 +160,12 @@ module FastSerializer
           nil
         end
       end
-      
+
       # Set the time to live on a cacheable serializer.
       def cache_ttl=(value)
         @cache_ttl = value
       end
-      
+
       # Get the cache implemtation used to store cacheable serializers.
       def cache
         if defined?(@cache)
@@ -176,12 +176,15 @@ module FastSerializer
           FastSerializer.cache
         end
       end
-      
+
       # Set the cache implementation used to store cacheable serializers.
       def cache=(cache)
+        if defined?(ActiveSupport::Cache::Store) && cache.is_a?(ActiveSupport::Cache::Store)
+          cache = Cache::ActiveSupportCache.new(cache)
+        end
         @cache = cache
       end
-      
+
       # :nodoc:
       def new(object, options = nil)
         context = SerializationContext.current
@@ -192,7 +195,7 @@ module FastSerializer
           super
         end
       end
-      
+
       # Return a list of the SerializedFields defined for the class.
       def serializable_fields
         unless defined?(@serializable_fields) && @serializable_fields
@@ -202,14 +205,14 @@ module FastSerializer
         end
         @serializable_fields
       end
-      
+
       private
-      
+
       # Add a field to be serialized.
       def add_field(name, optional:, serializer:, serializer_options:, enumerable:)
         name = name.to_sym
         field = SerializedField.new(name, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable)
-        
+
         # Add the field to the frozen list of fields.
         field_list = []
         added = false
@@ -223,13 +226,13 @@ module FastSerializer
         field_list << field unless added
         @serializable_fields = field_list.freeze
       end
-      
+
       # Define a delegate method name +attribute+ that invokes the +field+ method on the wrapped object.
       def define_delegate(attribute, field)
-        define_method(attribute){ object.send(field) } 
+        define_method(attribute){ object.send(field) }
       end
     end
-  
+
     # Create a new serializer for the specified object.
     #
     # Options can be passed in to control how the object is serialized. Options supported by all Serializers:
@@ -242,9 +245,13 @@ module FastSerializer
     def initialize(object, options = nil)
       @object = object
       @options = options
+      @cache = options[:cache] if options
+      if @cache && defined?(ActiveSupport::Cache::Store) && cache.is_a?(ActiveSupport::Cache::Store)
+        @cache = Cache::ActiveSupportCache.new(@cache)
+      end
       @_serialized = nil
     end
-  
+
     # Serialize the wrapped object into a format suitable for passing to a JSON parser.
     def as_json(*args)
       return nil unless object
@@ -253,54 +260,54 @@ module FastSerializer
       end
       @_serialized
     end
-    
+
     alias :to_hash :as_json
     alias :to_h :as_json
-    
+
     # Convert the wrapped object to JSON format.
-    def to_json(options = nil)
+    def to_json(options = {})
       if defined?(MultiJson)
-        MultiJson.dump(as_json)
+        MultiJson.dump(as_json, options)
       else
         JSON.dump(as_json)
       end
     end
-    
+
     # Fetch the specified option from the options hash.
     def option(name)
       @options[name] if @options
     end
-    
+
     # Return true if this serializer is cacheable.
     def cacheable?
       option(:cacheable) || self.class.cacheable?
     end
-    
+
     # Return the cache implementation where this serializer can be stored.
     def cache
-      option(:cache) || self.class.cache
+      @cache || self.class.cache
     end
-    
+
     # Return the time to live in seconds this serializer can be cached for.
     def cache_ttl
       option(:cache_ttl) || self.class.cache_ttl
     end
-    
+
     # Returns a array of the elements that make this serializer unique. The
     # key is an array made up of the serializer class name, wrapped object, and
     # serialization options hash.
     def cache_key
       [self.class.name, object, options]
     end
-    
+
     # :nodoc:
     def ==(other)
       other.instance_of?(self.class) && @object == other.object && @options == other.options
     end
     alias_method :eql?, :==
-    
+
     protected
-    
+
     # Load the hash that will represent the wrapped object as a serialized object.
     def load_hash
       hash = {}
@@ -319,7 +326,7 @@ module FastSerializer
       end
       hash
     end
-    
+
     # Load the hash that will represent the wrapped object as a serialized object from a cache.
     def load_from_cache
       if cache
@@ -330,9 +337,9 @@ module FastSerializer
         load_hash
       end
     end
-    
+
     private
-    
+
     # Return a list of optional fields to be included in the output from the :include option.
     def included_optional_fields
       included_fields = option(:include)
@@ -342,7 +349,7 @@ module FastSerializer
         nil
       end
     end
-    
+
     # Return a list of fields to be excluded from the output from the :exclude option.
     def excluded_regular_fields
       excluded_fields = option(:exclude)

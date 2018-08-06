@@ -5,11 +5,11 @@ module FastSerializer
     def fetch(serializer, ttl, &block)
       raise NotImplementedError
     end
-    
+
     # Fetch multiple serializers from the cache. The default behavior is just
     # to call +fetch+ with each serializer. Implementations may optimize this
     # if the cache can return multiple values at once.
-    # 
+    #
     # The block to this method will be yielded to with each uncached serializer.
     def fetch_all(serializers, ttl)
       serializers.collect do |serializer|
