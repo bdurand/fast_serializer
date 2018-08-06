@@ -27,7 +27,7 @@ person = Person.new(:id => 1, :first_name => "John", :last_name => "Doe", :gende
 
 Serializers are classes that include `FastSerializer::Serializer`. Call the `serialize` method to specify which fields to include in the serialized object. Field values are gotten by calling the corresponding method on the serializer. By default each serialized field will define a method that delegates to the wrapped object.
 
-ruby```
+```ruby
 class PersonSerializer
   include FastSerializer::Serializer
   serialize :id, :name
