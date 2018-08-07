@@ -94,9 +94,25 @@ module FastSerializer
       #   used if the :serializer option has been set. If the field is marked as enumerable, then the value will be
       #   serialized as an array with each element wrapped in the specified serializer.
       #
+      # * condition: Block or method name that will be called at runtime bound to the serializer that will
+      #   determine if the attribute will be included or not.
+      #
       # Subclasses will inherit all of their parent classes serialized fields. Subclasses can override fields
       # defined on the parent class by simply defining them again.
-      def serialize(*fields, as: nil, optional: false, delegate: true, serializer: nil, serializer_options: nil, enumerable: false)
+      def serialize(*fields)
+        options = {}
+        if fields.size > 1 && fields.last.is_a?(Hash)
+          options = fields.last
+          fields = fields[0, fields.size - 1]
+        end
+        as = options[:as]
+        optional = options.fetch(:optional, false)
+        delegate = options.fetch(:delegate, true)
+        enumerable = options.fetch(:enumerable, false)
+        serializer = options[:serializer]
+        serializer_options = options[:serializer_options]
+        condition = options[:if]
+
         if as && fields.size > 1
           raise ArgumentError.new("Cannot specify :as argument with multiple fields to serialize")
         end
@@ -109,7 +125,7 @@ module FastSerializer
 
           field = field.to_sym
           attribute = (name || field).to_sym
-          add_field(attribute, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable)
+          add_field(attribute, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable, condition: condition)
 
           if delegate && !method_defined?(attribute)
             define_delegate(attribute, field)
@@ -209,9 +225,16 @@ module FastSerializer
       private
 
       # Add a field to be serialized.
-      def add_field(name, optional:, serializer:, serializer_options:, enumerable:)
+      def add_field(name, optional:, serializer:, serializer_options:, enumerable:, condition:)
         name = name.to_sym
-        field = SerializedField.new(name, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable)
+        if condition.is_a?(Proc)
+          include_method_name = "__include_#{name}?".to_sym
+          define_method(include_method_name, condition)
+          private include_method_name
+          condition = include_method_name
+        end
+        
+        field = SerializedField.new(name, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable, condition: condition)
 
         # Add the field to the frozen list of fields.
         field_list = []
@@ -278,6 +301,10 @@ module FastSerializer
       @options[name] if @options
     end
 
+    def scope
+      option(:scope)
+    end
+
     # Return true if this serializer is cacheable.
     def cacheable?
       option(:cacheable) || self.class.cacheable?
@@ -297,7 +324,8 @@ module FastSerializer
     # key is an array made up of the serializer class name, wrapped object, and
     # serialization options hash.
     def cache_key
-      [self.class.name, object, options]
+      object_cache_key = (object.respond_to?(:cache_key) ? object.cache_key : object)
+      [self.class.name, object_cache_key, options_cache_key(options)]
     end
 
     # :nodoc:
@@ -316,15 +344,38 @@ module FastSerializer
       SerializationContext.use do
         self.class.serializable_fields.each do |field|
           name = field.name
+          
           if field.optional?
             next unless include_fields && include_fields.include?(name)
           end
-          next if excluded_fields && excluded_fields.include?(name)
-          value = field.serialize(send(name))
+          next if excluded_fields && excluded_fields[name] == true
+          condition = field.condition
+          next if condition && !send(condition)
+          
+          value = field.serialize(send(name), serializer_options(name))
           hash[name] = value
         end
       end
       hash
+    end
+
+    def serializer_options(name)
+      opts = options
+      return nil unless opts
+      if opts && (opts.include?(:include) || opts.include?(:exclude))
+        opts = opts.dup
+        include_options = opts[:include]
+        if include_options.is_a?(Hash)
+          include_options = include_options[name.to_sym]
+          opts[:include] = include_options if include_options
+        end
+        exclude_options = options[:exclude]
+        if exclude_options.is_a?(Hash)
+          exclude_options = exclude_options[name.to_sym]
+          opts[:exclude] = exclude_options if exclude_options
+        end
+      end
+      opts
     end
 
     # Load the hash that will represent the wrapped object as a serialized object from a cache.
@@ -340,24 +391,52 @@ module FastSerializer
 
     private
 
+    def options_cache_key(options)
+      return nil if options.nil?
+      if options.respond_to?(:cache_key)
+        options.cache_key
+      elsif options.is_a?(Hash)
+        hash_key = {}
+        options.each do |key, value|
+          hash_key[key] = options_cache_key(value)
+        end
+        hash_key
+      elsif options.is_a?(Enumerable)
+        options.collect{|option| options_cache_key(option)}
+      else
+        options
+      end
+    end
+
     # Return a list of optional fields to be included in the output from the :include option.
     def included_optional_fields
-      included_fields = option(:include)
-      if included_fields
-        Array(included_fields).collect(&:to_sym)
-      else
-        nil
-      end
+      normalize_field_list(option(:include))
     end
 
     # Return a list of fields to be excluded from the output from the :exclude option.
     def excluded_regular_fields
-      excluded_fields = option(:exclude)
-      if excluded_fields
-        Array(excluded_fields).collect(&:to_sym)
+      normalize_field_list(option(:exclude))
+    end
+
+    def normalize_field_list(vals)
+      return nil if vals.nil?
+      if vals.is_a?(Hash)
+        hash = nil
+        vals.each do |key, values|
+          if hash || !key.is_a?(Symbol)
+            hash ||= {}
+            hash[key.to_sym] = values
+          end
+        end
+        vals = hash if hash
       else
-        nil
+        hash = {}
+        Array(vals).each do |key|
+          hash[key.to_sym] = true
+        end
+        vals = hash
       end
+      vals
     end
   end
 end

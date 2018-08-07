@@ -1,11 +1,12 @@
 module FastSerializer
   # Data structure used internally for maintaining a field to be serialized.
   class SerializedField
-    attr_reader :name
+    attr_reader :name, :condition
 
-    def initialize(name, optional: false, serializer: nil, serializer_options: nil, enumerable: false)
+    def initialize(name, optional: false, serializer: nil, serializer_options: nil, enumerable: false, condition: nil)
       @name = name
       @optional = !!optional
+      @condition = condition
       if serializer
         @serializer = serializer
         @serializer_options = serializer_options
@@ -18,13 +19,13 @@ module FastSerializer
     end
 
     # Wrap a value in the serializer if one has been set. Otherwise just returns the raw value.
-    def serialize(value)
+    def serialize(value, options = nil)
       if value && @serializer
         serializer = nil
         if @enumerable
-          serializer = ArraySerializer.new(value, :serializer => @serializer, :serializer_options => @serializer_options)
+          serializer = ArraySerializer.new(value, :serializer => @serializer, :serializer_options => serializer_options(options))
         else
-          serializer = @serializer.new(value, @serializer_options)
+          serializer = @serializer.new(value, serializer_options(options))
         end
         context = SerializationContext.current
         if context
@@ -38,6 +39,31 @@ module FastSerializer
     end
 
     private
+
+    def serializer_options(options)
+      if options
+        if @serializer_options
+          deep_merge(@serializer_options, options)
+        else
+          options
+        end
+      else
+        @serializer_options
+      end
+    end
+
+    def deep_merge(hash, merge_hash)
+      retval = {}
+      merge_hash.each do |key, merge_value|
+        value = hash[key]
+        if value.is_a?(Hash) && merge_value.is_a?(Hash)
+          retval[key] = deep_merge(value, merge_value)
+        else
+          retval[key] = merge_value
+        end
+      end
+      retval
+    end
 
     # Convert the value to primitive data types: string, number, boolean, symbol, time, date, array, hash.
     def serialize_value(value)

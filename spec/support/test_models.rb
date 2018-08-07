@@ -51,7 +51,7 @@ end
 class ComplexSerializer < SimpleSerializer
   serialize :serial_number, delegate: false
   serialize :associations, delegate: true, serializer: CachedSerializer, enumerable: true
-  serialize :parent, delegate: true, serializer: SimpleSerializer
+  serialize :parent, delegate: true, serializer: SimpleSerializer, serializer_options: {include: :description}
 
   def serial_number
     option(:serial_number)
@@ -61,4 +61,14 @@ end
 class CircularSerializer < SimpleSerializer
   remove :name, :validated
   serialize :parent, serializer: self
+end
+
+class ConditionalSerializer < SimpleSerializer
+  remove :validated
+  serialize :description, if: -> { scope == :description }
+  serialize :name, if: :show_name?
+  
+  def show_name?
+    scope == :name
+  end
 end

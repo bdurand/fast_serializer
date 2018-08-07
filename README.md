@@ -81,6 +81,25 @@ PersonSerializer.new(person).as_json # => {
                                      #    }
 ```
 
+Subclasses of serializers inherit all attributes. You can add or remove additional attributes in a subclass.
+
+```ruby
+class PersonSerializer
+  include FastSerializer::Serializer
+  serialize :id
+  serialize :name
+  serialize :phone
+end
+
+class EmployeeSerializer < PersonSerializer
+  serialize :email
+  remove :phone
+end
+
+PersonSerializer.new(person).as_json # => {:id => 1, :name => "John Doe", :phone => "222-555-1212"}
+EmployeeSerializer.new(person).as_json # => {:id => 1, :name => "John Doe", :email => "john@example.com"}
+```
+
 ### Optional and excluding fields
 
 Serializer can have optional fields. You can also specify fields to exclude.
@@ -100,6 +119,34 @@ end
 PersonSerializer.new(person).as_json # => {:id => 1, :name => "John Doe"}
 PersonSerializer.new(person, :include => [:gender]).as_json # => {:id => 1, :name => "John Doe", :gender => "M"}
 PersonSerializer.new(person, :exclude => [:id]).as_json # => {:name => "John Doe"}
+```
+
+You can also pass the `:include` and `:exclude` options as hashes if you want to have them apply to associated records.
+
+```ruby
+class PersonSerializer
+  include FastSerializer::Serializer
+  serialize :id
+  serialize :name
+  serialize :company, serializer: CompanySerializer
+end
+
+PersonSerializer.new(person, :exclude => {:company => :address}).as_json
+```
+
+You can also specify fields to be optional with an `:if` block in the definition with the name of a method from the serializer. It can also be a `Proc` that will be executed with the binding of an instance of the serializer. The field will only be included if the method returns a truthy value.
+
+```ruby
+class PersonSerializer
+  include FastSerializer::Serializer
+  serialize :id
+  serialize :name, if: -> { scope && scope.id == id }
+  serialize :role, if: :staff?
+
+  def staff?
+    object.staff?
+  end
+end
 ```
 
 ### Serializer options
@@ -123,6 +170,17 @@ end
 
 PersonSerializer.new(person).as_json # => {:id => 1, :name => "John Doe"}
 PersonSerializer.new(person, :last_first => true).as_json # => {:id => 1, :name => "Doe, John"}
+```
+
+The options hash is passed to all nested serializers. The special option name `:scope` is available as a method within the serializer and is used by convention to enforce various data restrictions.
+
+```ruby
+class PersonSerializer
+  include FastSerializer::Serializer
+  serialize :id
+  serialize :name
+  serialize :email, if: -> { scope && scope.id == object.id }
+end
 ```
 
 ### Caching

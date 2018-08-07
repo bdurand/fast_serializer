@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe FastSerializer::Serializer do
 
-  let(:model){ SimpleModel.new(:id => 1, :name => "foo", :description => "foobar") }
+  let(:model){ SimpleModel.new(:id => 1, :name => "foo", :description => "foobar", :number => 12) }
 
   it "should serialize object to JSON compatible format" do
     serializer = SimpleSerializer.new(model)
@@ -102,6 +102,25 @@ describe FastSerializer::Serializer do
     })
   end
 
+  it "should pass include and exclude options to child serializers" do
+    other_model = SimpleModel.new(:id => 3, :name => "other")
+    complex = SimpleModel.new(:id => 2, :name => :complex, :parent => model, :associations => [model, other_model])
+    serializer = ComplexSerializer.new(complex, :serial_number => 15, :exclude => {:associations => [:validated]}, :include => {:parent => :amount})
+    expect(serializer.as_json).to eq({
+      :id => 2, :name => :complex, :validated => false, :serial_number => 15,
+      :associations => [
+        {:id => 1, :name => "foo"},
+        {:id => 3, :name => "other"}
+      ],
+      :parent => {:id => 1, :name => "foo", :validated => false, :amount => 12}
+    })
+  end
+
+  it "should have a scope option" do
+    serializer = CachedSerializer.new(model, :scope => :foo)
+    expect(serializer.scope).to eq :foo
+  end
+
   it "should return identical serialized values for serializers on the same object and options inside the same context" do
     other_model = SimpleModel.new(:id => 3, :name => "other")
     complex = SimpleModel.new(:id => 2, :name => "complex", :associations => [model, other_model, model])
@@ -122,7 +141,7 @@ describe FastSerializer::Serializer do
       "associations" => [
         {"id" => 1, "name" => "foo", "validated" => false}
       ],
-      "parent" => {"id" => 1, "name" => "foo", "validated" => false}
+      "parent" => {"id" => 1, "name" => "foo", "validated" => false, "description"=>"foobar"}
     })
   end
 
@@ -148,5 +167,11 @@ describe FastSerializer::Serializer do
     model.parent = model
     serializer = CircularSerializer.new(model)
     expect{ serializer.as_json }.to raise_error(FastSerializer::CircularReferenceError)
+  end
+
+  it "should allow conditionals on serialized fields" do
+    expect(ConditionalSerializer.new(model).as_json).to eq({:id => 1})
+    expect(ConditionalSerializer.new(model, :scope => :description).as_json).to eq({:id => 1,  :description => "foobar"})
+    expect(ConditionalSerializer.new(model, :scope => :name).as_json).to eq({:id => 1,  :name => "foo"})
   end
 end
