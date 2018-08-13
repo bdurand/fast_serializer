@@ -70,25 +70,9 @@ module FastSerializer
       if value.is_a?(String) || value.is_a?(Numeric) || value == nil || value == true || value == false || value.is_a?(Time) || value.is_a?(Date) || value.is_a?(Symbol)
         value
       elsif value.is_a?(Hash)
-        hash = nil
-        value.each do |k, v|
-          val = serialize_value(v)
-          if val.object_id != v.object_id
-            hash = value.dup unless hash
-            hash[k] = val
-          end
-        end
-        hash || value
+        serialize_hash(value)
       elsif value.is_a?(Enumerable)
-        array = nil
-        value.each_with_index do |v, i|
-          val = serialize_value(v)
-          if val.object_id != v.object_id
-            array = value.dup unless array
-            array[i] = val
-          end
-        end
-        array || value
+        serialize_enumerable(value)
       elsif value.respond_to?(:as_json)
         value.as_json
       elsif value.respond_to?(:to_hash)
@@ -100,5 +84,28 @@ module FastSerializer
       end
     end
 
+    def serialize_hash(value)
+      hash = nil
+      value.each do |k, v|
+        val = serialize_value(v)
+        if val.object_id != v.object_id
+          hash = value.dup unless hash
+          hash[k] = val
+        end
+      end
+      hash || value
+    end
+
+    def serialize_enumerable(value)
+      array = nil
+      value.each_with_index do |v, i|
+        val = serialize_value(v)
+        if val.object_id != v.object_id
+          array = value.dup unless array
+          array[i] = val
+        end
+      end
+      array || value
+    end
   end
 end
