@@ -1,4 +1,4 @@
-This gem provides a highly optimized framework for serializing Ruby objects into hashes suitable for serialization to some other format (i.e. JSON). It provides many of the same features as other serialization frameworks like active_model_serializers, but it is designed to emphasize code efficiency over feature set.
+This gem provides a highly optimized framework for serializing Ruby objects into hashes suitable for serialization to some other format (i.e. JSON). It provides many of the same features as other serialization frameworks like active_model_serializers, but it is designed to emphasize code efficiency over feature set and syntactic surgar.
 
 ## Examples
 
@@ -220,6 +220,7 @@ You can also pass a cache to a serializer using the `:cache` option.
 If you have a collection of objects to serialize, you can use the `FastSerializer::ArraySerializer` to serialize an enumeration of objects.
 
 ```ruby
+  FastSerializer::ArraySerializer.new([a, b, c, d], :serializer => MyObjectSerializer)
 ```
 
 ## Performance
