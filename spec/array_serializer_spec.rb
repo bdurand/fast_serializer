@@ -34,6 +34,14 @@ describe FastSerializer::ArraySerializer do
     ]
   end
 
+  it "should be able to use the array helper method on a serializer to serialize an array of objects" do
+    model_1 = SimpleModel.new(:id => 1, :name => "foo")
+    model_2 = SimpleModel.new(:id => 2, :name => "bar")
+    array_serializer = FastSerializer::ArraySerializer.new([model_1, model_2], :serializer => SimpleSerializer, :serializer_options => {:include => :description})
+    helper_serializer = SimpleSerializer.array([model_1, model_2], :serializer_options => {:include => :description})
+    expect(array_serializer.to_json).to eq helper_serializer.to_json
+  end
+
   it "should not respond to_hash methods" do
     array = [1, 2, 3]
     serializer = FastSerializer::ArraySerializer.new(array)

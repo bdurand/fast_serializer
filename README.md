@@ -220,8 +220,15 @@ You can also pass a cache to a serializer using the `:cache` option.
 If you have a collection of objects to serialize, you can use the `FastSerializer::ArraySerializer` to serialize an enumeration of objects.
 
 ```ruby
-  FastSerializer::ArraySerializer.new([a, b, c, d], :serializer => MyObjectSerializer)
+FastSerializer::ArraySerializer.new([a, b, c, d], :serializer => MyObjectSerializer)
 ```
+
+You can also use the `array` helper class method on a serializer to do the same thing:
+
+```ruby
+PersonSerializer.array([a, b, c, d])
+```
+
 
 ## Performance
 

@@ -58,6 +58,7 @@ module FastSerializer
 
     def self.included(base)
       base.extend(ClassMethods)
+      base.extend(ArrayHelper) unless base.is_a?(FastSerializer::ArraySerializer)
     end
 
     # Return the wrapped object that is being serialized.
@@ -253,6 +254,14 @@ module FastSerializer
       # Define a delegate method name +attribute+ that invokes the +field+ method on the wrapped object.
       def define_delegate(attribute, field)
         define_method(attribute){ object.send(field) }
+      end
+    end
+    
+    module ArrayHelper
+      # Helper method to serialize an array of values using this serializer.
+      def array(values, options = nil)
+        options = (options ? options.merge(:serializer => self) : {:serializer => self})
+        FastSerializer::ArraySerializer.new(values, options)
       end
     end
 
