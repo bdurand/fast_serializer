@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   # Data structure used internally for maintaining a field to be serialized.
   class SerializedField
@@ -67,8 +69,14 @@ module FastSerializer
 
     # Convert the value to primitive data types: string, number, boolean, symbol, time, date, array, hash.
     def serialize_value(value)
-      if value.is_a?(String) || value.is_a?(Numeric) || value == nil || value == true || value == false || value.is_a?(Time) || value.is_a?(Date) || value.is_a?(Symbol)
+      if value.is_a?(String) || value.is_a?(Numeric) || value == nil || value == true || value == false || value.is_a?(Symbol)
         value
+      elsif value.is_a?(Time) || value.is_a?(Date)
+        if defined?(ActiveSupport::TimeWithZone) && value.is_a?(ActiveSupport::TimeWithZone)
+          value.to_time
+        else
+          value
+        end
       elsif value.is_a?(Hash)
         serialize_hash(value)
       elsif value.is_a?(Enumerable)

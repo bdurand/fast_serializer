@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   # ActiveSupport compatible cache implementation.
   class Cache::ActiveSupportCache < Cache

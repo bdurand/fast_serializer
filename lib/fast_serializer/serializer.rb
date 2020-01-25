@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   # Models can include this module to define themselves as serializers. A serializer is used to wrap
   # an object and output a hash version of that object suitable for serialization to JSON or other formats.
@@ -103,16 +105,22 @@ module FastSerializer
       def serialize(*fields)
         options = {}
         if fields.size > 1 && fields.last.is_a?(Hash)
-          options = fields.last
+          fields.last.each do |key, value|
+            options[key.to_sym] = value
+          end
           fields = fields[0, fields.size - 1]
         end
-        as = options[:as]
-        optional = options.fetch(:optional, false)
-        delegate = options.fetch(:delegate, true)
-        enumerable = options.fetch(:enumerable, false)
-        serializer = options[:serializer]
-        serializer_options = options[:serializer_options]
-        condition = options[:if]
+        as = options.delete(:as)
+        optional = options.delete(:optional) || false
+        delegate = options.delete(:delegate) || true
+        enumerable = options.delete(:enumerable) || false
+        serializer = options.delete(:serializer)
+        serializer_options = options.delete(:serializer_options)
+        condition = options.delete(:if)
+
+        unless options.empty?
+          raise ArgumentError.new("Unsupported serialize options: #{options.keys.join(', ')}")
+        end
 
         if as && fields.size > 1
           raise ArgumentError.new("Cannot specify :as argument with multiple fields to serialize")
@@ -234,7 +242,7 @@ module FastSerializer
           private include_method_name
           condition = include_method_name
         end
-        
+
         field = SerializedField.new(name, optional: optional, serializer: serializer, serializer_options: serializer_options, enumerable: enumerable, condition: condition)
 
         # Add the field to the frozen list of fields.
@@ -256,7 +264,7 @@ module FastSerializer
         define_method(attribute){ object.send(field) }
       end
     end
-    
+
     module ArrayHelper
       # Helper method to serialize an array of values using this serializer.
       def array(values, options = nil)
@@ -353,14 +361,14 @@ module FastSerializer
       SerializationContext.use do
         self.class.serializable_fields.each do |field|
           name = field.name
-          
+
           if field.optional?
             next unless include_fields && include_fields.include?(name)
           end
           next if excluded_fields && excluded_fields[name] == true
           condition = field.condition
           next if condition && !send(condition)
-          
+
           value = field.serialize(send(name), serializer_options(name))
           hash[name] = value
         end

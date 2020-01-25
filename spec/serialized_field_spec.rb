@@ -40,6 +40,17 @@ describe FastSerializer::SerializedField do
     expect(field.serialize(date)).to eq date
   end
 
+  it "should serialize datetimes" do
+    datetime = DateTime.now
+    expect(field.serialize(datetime)).to eq datetime
+  end
+
+  it "should serialize ActiveSupport::TimeWithZone as a DateTime" do
+    time = ActiveSupport::TimeZone.new("UTC").now
+    expect(field.serialize(time)).to eq time
+    expect(field.serialize(time).class).to eq Time
+  end
+
   it "should serialize a field using a specified serializer" do
     field = FastSerializer::SerializedField.new(:test, serializer: SimpleSerializer)
     expect(field.serialize(model)).to eq({:id => 1, :name => "foo", :validated => false})

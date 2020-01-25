@@ -1,3 +1,8 @@
+### 1.1.2
+
+* Handle converting ActiveSupport::TimeWithZone to a Time so it can be better dumped to non-JSON formats.
+* Sanity check for unsupported options
+
 ### 1.1.1
 
 * Add `array` class method to serializers.

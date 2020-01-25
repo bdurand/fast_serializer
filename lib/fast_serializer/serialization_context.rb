@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   # This class provides a context for creating serializers that allows
   # duplicate serializers to be re-used within the context. This then

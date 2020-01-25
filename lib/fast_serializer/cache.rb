@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   # Base class for cache implementations for storing cacheable serializers.
   # Implementations must implement the +fetch+ method.

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FastSerializer
   # Serializer implementation for serializing an array of objects.
   # This class allows taking advantage of a single SerializationContext
