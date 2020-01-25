@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/weheartit/fast_serializer.svg?branch=master)](https://travis-ci.org/weheartit/fast_serializer)
+[![Maintainability](https://api.codeclimate.com/v1/badges/02fd32c734e667432df6/maintainability)](https://codeclimate.com/github/bdurand/fast_serializer/maintainability)
+
 This gem provides a highly optimized framework for serializing Ruby objects into hashes suitable for serialization to some other format (i.e. JSON). It provides many of the same features as other serialization frameworks like active_model_serializers, but it is designed to emphasize code efficiency over feature set and syntactic surgar.
 
 ## Examples
