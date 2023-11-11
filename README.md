@@ -1,3 +1,5 @@
+[![Continuous Integration](https://github.com/bdurand/fast_serializer/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/fast_serializer/actions/workflows/continuous_integration.yml)
+[![Regression Test](https://github.com/bdurand/fast_serializer/actions/workflows/regression_test.yml/badge.svg)](https://github.com/bdurand/fast_serializer/actions/workflows/regression_test.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
 
 This gem provides a highly optimized framework for serializing Ruby objects into hashes suitable for serialization to some other format (i.e. JSON). It provides many of the same features as other serialization frameworks like active_model_serializers, but it is designed to emphasize code efficiency over feature set and syntactic surgar.
