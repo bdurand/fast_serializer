@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/weheartit/fast_serializer.svg?branch=master)](https://travis-ci.org/weheartit/fast_serializer)
-[![Maintainability](https://api.codeclimate.com/v1/badges/02fd32c734e667432df6/maintainability)](https://codeclimate.com/github/bdurand/fast_serializer/maintainability)
+[![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
 
 This gem provides a highly optimized framework for serializing Ruby objects into hashes suitable for serialization to some other format (i.e. JSON). It provides many of the same features as other serialization frameworks like active_model_serializers, but it is designed to emphasize code efficiency over feature set and syntactic surgar.
 
@@ -232,7 +231,33 @@ You can also use the `array` helper class method on a serializer to do the same 
 PersonSerializer.array([a, b, c, d])
 ```
 
-
 ## Performance
 
 Your mileage may vary. In many cases the performance of the serialization code doesn't particularly matter and this gem performs just about as well as other solutions. However, if you do have high throughput API or can utilize the caching features or have heavily nested models in your JSON responses, then the performance increase may be noticeable.
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'fast_serializer'
+```
+
+And then execute:
+```bash
+$ bundle
+```
+
+Or install it yourself as:
+```bash
+$ gem install fast_serializer
+```
+
+## Contributing
+
+Open a pull request on GitHub.
+
+Please use the [standardrb](https://github.com/testdouble/standard) syntax and lint your code with `standardrb --fix` before submitting.
+
+## License
+
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

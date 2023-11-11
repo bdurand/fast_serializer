@@ -1,9 +1,10 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require "spec_helper"
 
 describe FastSerializer::SerializedField do
-
-  let(:field){ FastSerializer::SerializedField.new(:test) }
-  let(:model){ SimpleModel.new(:id => 1, :name => "foo") }
+  let(:field) { FastSerializer::SerializedField.new(:test) }
+  let(:model) { SimpleModel.new(id: 1, name: "foo") }
 
   it "should integers" do
     expect(field.serialize(1)).to eq 1
@@ -45,38 +46,39 @@ describe FastSerializer::SerializedField do
     expect(field.serialize(datetime)).to eq datetime
   end
 
-  it "should serialize ActiveSupport::TimeWithZone as a DateTime" do
-    time = ActiveSupport::TimeZone.new("UTC").now
-    expect(field.serialize(time)).to eq time
-    expect(field.serialize(time).class).to eq Time
+  if defined?(ActiveSupport)
+    it "should serialize ActiveSupport::TimeWithZone as a DateTime" do
+      time = ActiveSupport::TimeZone.new("UTC").now
+      expect(field.serialize(time)).to eq time
+      expect(field.serialize(time).class).to eq Time
+    end
   end
 
   it "should serialize a field using a specified serializer" do
     field = FastSerializer::SerializedField.new(:test, serializer: SimpleSerializer)
-    expect(field.serialize(model)).to eq({:id => 1, :name => "foo", :validated => false})
+    expect(field.serialize(model)).to eq({id: 1, name: "foo", validated: false})
   end
 
   it "should serialize an enumerable field using a specified serializer" do
     field = FastSerializer::SerializedField.new(:test, serializer: SimpleSerializer, enumerable: true)
-    expect(field.serialize(model)).to eq([{:id => 1, :name => "foo", :validated => false}])
+    expect(field.serialize(model)).to eq([{id: 1, name: "foo", validated: false}])
   end
 
   it "should serialize a field value by calling as_json on the field" do
-    expect(field.serialize(model)).to eq({:id => 1, :name => "foo", :description => nil, :number => nil})
+    expect(field.serialize(model)).to eq({id: 1, name: "foo", description: nil, number: nil})
   end
 
   it "should serialize a hash of objects" do
-    expect(field.serialize(:name => "Test", :object => model)).to eq({
-      :name => "Test",
-      :object => {:id => 1, :name => "foo", :description => nil, :number => nil}
+    expect(field.serialize(name: "Test", object: model)).to eq({
+      name: "Test",
+      object: {id: 1, name: "foo", description: nil, number: nil}
     })
   end
 
   it "should serialize an array of objects" do
     expect(field.serialize([model, model])).to eq([
-      {:id => 1, :name => "foo", :description => nil, :number => nil},
-      {:id => 1, :name => "foo", :description => nil, :number => nil}
+      {id: 1, name: "foo", description: nil, number: nil},
+      {id: 1, name: "foo", description: nil, number: nil}
     ])
   end
-
 end

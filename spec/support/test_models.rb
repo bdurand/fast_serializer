@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class SimpleModel
   attr_reader :id, :name, :description, :associations, :number
   attr_accessor :parent
@@ -17,7 +19,7 @@ class SimpleModel
   end
 
   def as_json(*args)
-    {:id => @id, :name => @name, :description => @description, :number => @number}
+    {id: @id, name: @name, description: @description, number: @number}
   end
 end
 
@@ -67,8 +69,21 @@ class ConditionalSerializer < SimpleSerializer
   remove :validated
   serialize :description, if: -> { scope == :description }
   serialize :name, if: :show_name?
-  
+
   def show_name?
     scope == :name
   end
+end
+
+class SubCacheSerializer1 < CachedSerializer
+  self.cache_ttl = 5
+  self.cache = :mock
+end
+
+class SubCacheSerializer2 < CachedSerializer
+end
+
+class SubCacheSerializerGlobalInheritTest
+  include FastSerializer::Serializer
+  cacheable
 end

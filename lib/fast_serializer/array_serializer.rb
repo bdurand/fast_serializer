@@ -10,9 +10,11 @@ module FastSerializer
     serialize :array
 
     def initialize(object, options = nil)
+      @_array = nil
       super(Array(object), options)
     end
 
+    # @return [String]
     def cache_key
       if option(:serializer)
         array.collect(&:cache_key)
@@ -21,6 +23,7 @@ module FastSerializer
       end
     end
 
+    # @return [Boolean]
     def cacheable?
       if option(:cacheable) || self.class.cacheable?
         true
@@ -31,6 +34,7 @@ module FastSerializer
       end
     end
 
+    # @return [Numeric, Boolean]
     def cache_ttl
       if option(:cache_ttl)
         true
@@ -41,6 +45,7 @@ module FastSerializer
       end
     end
 
+    # @return [FastSerializer::Cache, Boolean]
     def cache
       if option(:cache)
         true
@@ -51,6 +56,7 @@ module FastSerializer
       end
     end
 
+    # @return [Hash]
     def as_json(*args)
       if array.nil?
         nil
@@ -63,14 +69,14 @@ module FastSerializer
 
     undef :to_hash
     undef :to_h
-    alias :to_a :as_json
+    alias_method :to_a, :as_json
 
     protected
 
     def load_from_cache
       if cache
-        values = cache.fetch_all(array, cache_ttl){|serializer| serializer.as_json}
-        {:array => values}
+        values = cache.fetch_all(array, cache_ttl) { |serializer| serializer.as_json }
+        {array: values}
       else
         load_hash
       end
@@ -79,11 +85,11 @@ module FastSerializer
     private
 
     def array
-      unless defined?(@_array)
+      if @_array.nil?
         serializer = option(:serializer)
         if serializer
           serializer_options = option(:serializer_options)
-          @_array = object.collect{|obj| serializer.new(obj, serializer_options)}
+          @_array = object.collect { |obj| serializer.new(obj, serializer_options) }
         else
           @_array = object
         end
