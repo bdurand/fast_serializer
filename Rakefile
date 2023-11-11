@@ -22,4 +22,16 @@ RSpec::Core::RakeTask.new(:spec)
 
 task default: :spec
 
+desc "run the specs using appraisal"
+task :appraisals do
+  exec "bundle exec appraisal rake spec"
+end
+
+namespace :appraisals do
+  desc "install all the appraisal gemspecs"
+  task :install do
+    exec "bundle exec appraisal install"
+  end
+end
+
 require "standard/rake"
