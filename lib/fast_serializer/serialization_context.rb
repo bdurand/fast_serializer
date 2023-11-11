@@ -9,6 +9,8 @@ module FastSerializer
       # Use a context or create one for use within a block. Any serializers
       # based on the same object with the same options within the block will be
       # re-used instead of creating duplicates.
+      #
+      # @return [Object] The return value of the block.
       def use
         if Thread.current[:fast_serializer_context]
           yield
@@ -23,6 +25,8 @@ module FastSerializer
       end
 
       # Return the current context or nil if none is in use.
+      #
+      # @return [FastSerializer::SerializationContext, nil]
       def current
         Thread.current[:fast_serializer_context]
       end
@@ -33,9 +37,14 @@ module FastSerializer
       @references = nil
     end
 
-    # Returns a serializer from the context cache if a duplicate has already
+    # Returns a serializer from the context cache if one has already
     # been created. Otherwise creates the serializer and adds it to the
     # cache.
+    #
+    # @param serializer_class [Class] The serializer class to create.
+    # @param object [Object] The object to serialize.
+    # @param options [Hash] The options to pass to the serializer.
+    # @return [FastSerializer::Serializer] The serializer.
     def load(serializer_class, object, options = nil)
       key = [serializer_class, object, options]
       serializer = nil
@@ -54,6 +63,10 @@ module FastSerializer
     end
 
     # Maintain reference stack to avoid circular references.
+    #
+    # @param object [Object] The object to check for circular references.
+    # @yield The block to execute.
+    # @return The return value of the block.
     def with_reference(object)
       if @references
         raise CircularReferenceError.new(object) if @references.include?(object)

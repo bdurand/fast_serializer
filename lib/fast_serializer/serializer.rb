@@ -101,6 +101,10 @@ module FastSerializer
       #
       # Subclasses will inherit all of their parent classes serialized fields. Subclasses can override fields
       # defined on the parent class by simply defining them again.
+      #
+      # @param fields [Array<Symbol, Hash>] the fields to serialize. If the last argument is a hash, it will be
+      #   treated as options for the serialized fields.
+      # @return [void]
       def serialize(*fields)
         options = {}
         if fields.size > 1 && fields.last.is_a?(Hash)
@@ -143,6 +147,8 @@ module FastSerializer
 
       # Remove a field from being serialized. This can be useful in subclasses if they need to remove a
       # field defined by the parent class.
+      #
+      # @param fields [Array<Symbol>] the fields to remove
       def remove(*fields)
         remove_fields = fields.collect(&:to_sym)
         field_list = []
@@ -160,6 +166,10 @@ module FastSerializer
       #
       # You can also specify the cache time to live (ttl) in seconds and the cache implementation to use.
       # Both of these values are inherited on subclasses.
+      #
+      # @param cacheable [Boolean] pass false if the serializer is not cacheable
+      # @param ttl [Numeric] the time to live in seconds for a cacheable serializer
+      # @param cache [FastSerializer::Cache] the cache implementation to use for a cacheable serializer
       def cacheable(cacheable = true, ttl: nil, cache: nil)
         @cacheable = cacheable
         self.cache_ttl = ttl if ttl
@@ -167,6 +177,8 @@ module FastSerializer
       end
 
       # Return true if the serializer class is cacheable.
+      #
+      # @return [Boolean]
       def cacheable?
         unless defined?(@cacheable)
           @cacheable = superclass.cacheable? if superclass.respond_to?(:cacheable?)
@@ -175,6 +187,8 @@ module FastSerializer
       end
 
       # Return the time to live in seconds for a cacheable serializer.
+      #
+      # @return [Numeric]
       def cache_ttl
         if defined?(@cache_ttl)
           @cache_ttl
@@ -184,11 +198,16 @@ module FastSerializer
       end
 
       # Set the time to live on a cacheable serializer.
+      #
+      # @param value [Numeric] the time to live in seconds
+      # @return [void]
       def cache_ttl=(value)
         @cache_ttl = value
       end
 
       # Get the cache implemtation used to store cacheable serializers.
+      #
+      # @return [FastSerializer::Cache]
       def cache
         if defined?(@cache)
           @cache
@@ -200,6 +219,9 @@ module FastSerializer
       end
 
       # Set the cache implementation used to store cacheable serializers.
+      #
+      # @param cache [FastSerializer::Cache]
+      # @return [void]
       def cache=(cache)
         if defined?(ActiveSupport::Cache::Store) && cache.is_a?(ActiveSupport::Cache::Store)
           cache = Cache::ActiveSupportCache.new(cache)
@@ -219,6 +241,8 @@ module FastSerializer
       end
 
       # Return a list of the SerializedFields defined for the class.
+      #
+      # @return [Array<FastSerializer::SerializedField>]
       def serializable_fields
         unless defined?(@serializable_fields) && @serializable_fields
           fields = superclass.send(:serializable_fields).dup if superclass.respond_to?(:serializable_fields)

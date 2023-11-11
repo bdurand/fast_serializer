@@ -24,6 +24,8 @@ module FastSerializer
     #
     # In a Rails app, you can initialize the cache by simply passing in the value :rails
     # to use the default Rails.cache. You can also directly pass in an ActiveSupportCache::Store.
+    #
+    # @param cache [FastSerializer::Cache, ActiveSupport::Cache::Store, Symbol] the cache to use
     def cache=(cache)
       if cache == :rails
         cache = Cache::ActiveSupportCache.new(Rails.cache)

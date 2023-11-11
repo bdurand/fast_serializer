@@ -5,8 +5,16 @@ module FastSerializer
   class SerializedField
     attr_reader :name, :condition
 
+    # Create a new serialized field.
+    #
+    # @param name [Symbol] the name of the field
+    # @param optional [Boolean] whether the field is optional
+    # @param serializer [Class] the serializer to use for the field
+    # @param serializer_options [Hash] the options to pass to the serializer
+    # @param enumerable [Boolean] whether the field is enumerable
+    # @param condition [Proc] a condition to determine whether the field should be serialized
     def initialize(name, optional: false, serializer: nil, serializer_options: nil, enumerable: false, condition: nil)
-      @name = name
+      @name = name.to_sym
       @optional = !!optional
       @condition = condition
       if serializer
@@ -16,11 +24,16 @@ module FastSerializer
       end
     end
 
+    # @return [Boolean] true if the field is optional
     def optional?
       @optional
     end
 
     # Wrap a value in the serializer if one has been set. Otherwise just returns the raw value.
+    #
+    # @param value [Object] the value to serialize
+    # @param options [Hash] the options to pass to the serializer
+    # @return [Object] the serialized value
     def serialize(value, options = nil)
       if value && @serializer
         serializer = nil

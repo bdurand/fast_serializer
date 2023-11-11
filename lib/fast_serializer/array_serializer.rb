@@ -14,6 +14,7 @@ module FastSerializer
       super(Array(object), options)
     end
 
+    # @return [String]
     def cache_key
       if option(:serializer)
         array.collect(&:cache_key)
@@ -22,6 +23,7 @@ module FastSerializer
       end
     end
 
+    # @return [Boolean]
     def cacheable?
       if option(:cacheable) || self.class.cacheable?
         true
@@ -32,6 +34,7 @@ module FastSerializer
       end
     end
 
+    # @return [Numeric, Boolean]
     def cache_ttl
       if option(:cache_ttl)
         true
@@ -42,6 +45,7 @@ module FastSerializer
       end
     end
 
+    # @return [FastSerializer::Cache, Boolean]
     def cache
       if option(:cache)
         true
@@ -52,6 +56,7 @@ module FastSerializer
       end
     end
 
+    # @return [Hash]
     def as_json(*args)
       if array.nil?
         nil
