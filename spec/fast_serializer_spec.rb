@@ -1,7 +1,8 @@
-require 'spec_helper'
+# frozen_string_literal: true
+
+require "spec_helper"
 
 describe FastSerializer do
-
   it "should be able to set and get a global cache" do
     expect(FastSerializer.cache).to eq nil
     begin
@@ -14,9 +15,9 @@ describe FastSerializer do
     expect(FastSerializer.cache).to eq nil
   end
 
-  it "should set the cache to Rails.cache with the value :rails" do
-    begin
-      rails = double(:cache => :rails_cache)
+  if defined?(ActiveSupport)
+    it "should set the cache to Rails.cache with the value :rails" do
+      rails = double(cache: :rails_cache)
       stub_const("Rails", rails)
       FastSerializer.cache = :rails
       expect(FastSerializer.cache).to be_a FastSerializer::Cache::ActiveSupportCache
@@ -24,10 +25,8 @@ describe FastSerializer do
     ensure
       FastSerializer.cache = nil
     end
-  end
 
-  it "should set the cache with an ActiveSupport cache" do
-    begin
+    it "should set the cache with an ActiveSupport cache" do
       cache_store = ActiveSupport::Cache::MemoryStore.new
       FastSerializer.cache = cache_store
       expect(FastSerializer.cache).to be_a FastSerializer::Cache::ActiveSupportCache
@@ -36,5 +35,4 @@ describe FastSerializer do
       FastSerializer.cache = nil
     end
   end
-
 end

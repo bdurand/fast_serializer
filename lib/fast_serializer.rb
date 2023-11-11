@@ -1,24 +1,22 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'time'
-require 'date'
+require "json"
+require "time"
+require "date"
 
 module FastSerializer
-  require_relative 'fast_serializer/cache'
-  require_relative 'fast_serializer/cache/active_support_cache'
-  require_relative 'fast_serializer/serialization_context'
-  require_relative 'fast_serializer/serialized_field'
-  require_relative 'fast_serializer/serializer'
-  require_relative 'fast_serializer/array_serializer'
+  require_relative "fast_serializer/cache"
+  require_relative "fast_serializer/cache/active_support_cache"
+  require_relative "fast_serializer/serialization_context"
+  require_relative "fast_serializer/serialized_field"
+  require_relative "fast_serializer/serializer"
+  require_relative "fast_serializer/array_serializer"
 
   class << self
     @cache = nil
 
     # Get the global cache implementation used for storing cacheable serializers.
-    def cache
-      @cache
-    end
+    attr_reader :cache
 
     # Set the global cache implementation used for storing cacheable serializers.
     # The cache implementation should implement the +fetch+ method as defined in

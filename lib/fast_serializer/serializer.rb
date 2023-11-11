@@ -57,7 +57,6 @@ module FastSerializer
   #
   # Serializing a nil object will result in nil rather than an empty hash.
   module Serializer
-
     def self.included(base)
       base.extend(ClassMethods)
       base.extend(ArrayHelper) unless base.is_a?(FastSerializer::ArraySerializer)
@@ -119,7 +118,7 @@ module FastSerializer
         condition = options.delete(:if)
 
         unless options.empty?
-          raise ArgumentError.new("Unsupported serialize options: #{options.keys.join(', ')}")
+          raise ArgumentError.new("Unsupported serialize options: #{options.keys.join(", ")}")
         end
 
         if as && fields.size > 1
@@ -128,8 +127,8 @@ module FastSerializer
 
         fields.each do |field|
           name = as
-          if name.nil? && field.to_s.end_with?("?".freeze)
-            name = field.to_s.chomp("?".freeze)
+          if name.nil? && field.to_s.end_with?("?")
+            name = field.to_s.chomp("?")
           end
 
           field = field.to_sym
@@ -181,8 +180,6 @@ module FastSerializer
           @cache_ttl
         elsif superclass.respond_to?(:cache_ttl)
           superclass.cache_ttl
-        else
-          nil
         end
       end
 
@@ -249,10 +246,10 @@ module FastSerializer
         field_list = []
         added = false
         serializable_fields.each do |existing_field|
-          if existing_field.name == name
-            field_list << field
+          field_list << if existing_field.name == name
+            field
           else
-            field_list << existing_field
+            existing_field
           end
         end
         field_list << field unless added
@@ -261,14 +258,14 @@ module FastSerializer
 
       # Define a delegate method name +attribute+ that invokes the +field+ method on the wrapped object.
       def define_delegate(attribute, field)
-        define_method(attribute){ object.send(field) }
+        define_method(attribute) { object.send(field) }
       end
     end
 
     module ArrayHelper
       # Helper method to serialize an array of values using this serializer.
       def array(values, options = nil)
-        options = (options ? options.merge(:serializer => self) : {:serializer => self})
+        options = (options ? options.merge(serializer: self) : {serializer: self})
         FastSerializer::ArraySerializer.new(values, options)
       end
     end
@@ -295,14 +292,12 @@ module FastSerializer
     # Serialize the wrapped object into a format suitable for passing to a JSON parser.
     def as_json(*args)
       return nil unless object
-      unless @_serialized
-        @_serialized = (cacheable? ? load_from_cache : load_hash).freeze
-      end
+      @_serialized ||= (cacheable? ? load_from_cache : load_hash).freeze
       @_serialized
     end
 
-    alias :to_hash :as_json
-    alias :to_h :as_json
+    alias_method :to_hash, :as_json
+    alias_method :to_h, :as_json
 
     # Convert the wrapped object to JSON format.
     def to_json(options = {})
@@ -363,7 +358,7 @@ module FastSerializer
           name = field.name
 
           if field.optional?
-            next unless include_fields && include_fields.include?(name)
+            next unless include_fields&.include?(name)
           end
           next if excluded_fields && excluded_fields[name] == true
           condition = field.condition
@@ -419,7 +414,7 @@ module FastSerializer
         end
         hash_key
       elsif options.is_a?(Enumerable)
-        options.collect{|option| options_cache_key(option)}
+        options.collect { |option| options_cache_key(option) }
       else
         options
       end

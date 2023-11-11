@@ -24,14 +24,14 @@ module FastSerializer
     def serialize(value, options = nil)
       if value && @serializer
         serializer = nil
-        if @enumerable
-          serializer = ArraySerializer.new(value, :serializer => @serializer, :serializer_options => serializer_options(options))
+        serializer = if @enumerable
+          ArraySerializer.new(value, serializer: @serializer, serializer_options: serializer_options(options))
         else
-          serializer = @serializer.new(value, serializer_options(options))
+          @serializer.new(value, serializer_options(options))
         end
         context = SerializationContext.current
         if context
-          context.with_reference(value){ serializer.as_json }
+          context.with_reference(value) { serializer.as_json }
         else
           serializer.as_json
         end
@@ -58,10 +58,10 @@ module FastSerializer
       retval = {}
       merge_hash.each do |key, merge_value|
         value = hash[key]
-        if value.is_a?(Hash) && merge_value.is_a?(Hash)
-          retval[key] = deep_merge(value, merge_value)
+        retval[key] = if value.is_a?(Hash) && merge_value.is_a?(Hash)
+          deep_merge(value, merge_value)
         else
-          retval[key] = merge_value
+          merge_value
         end
       end
       retval
@@ -69,7 +69,7 @@ module FastSerializer
 
     # Convert the value to primitive data types: string, number, boolean, symbol, time, date, array, hash.
     def serialize_value(value)
-      if value.is_a?(String) || value.is_a?(Numeric) || value == nil || value == true || value == false || value.is_a?(Symbol)
+      if value.is_a?(String) || value.is_a?(Numeric) || value.nil? || value == true || value == false || value.is_a?(Symbol)
         value
       elsif value.is_a?(Time) || value.is_a?(Date)
         if defined?(ActiveSupport::TimeWithZone) && value.is_a?(ActiveSupport::TimeWithZone)
@@ -97,7 +97,7 @@ module FastSerializer
       value.each do |k, v|
         val = serialize_value(v)
         if val.object_id != v.object_id
-          hash = value.dup unless hash
+          hash ||= value.dup
           hash[k] = val
         end
       end
@@ -109,7 +109,7 @@ module FastSerializer
       value.each_with_index do |v, i|
         val = serialize_value(v)
         if val.object_id != v.object_id
-          array = value.dup unless array
+          array ||= value.dup
           array[i] = val
         end
       end

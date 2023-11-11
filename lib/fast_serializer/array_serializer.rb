@@ -10,6 +10,7 @@ module FastSerializer
     serialize :array
 
     def initialize(object, options = nil)
+      @_array = nil
       super(Array(object), options)
     end
 
@@ -63,14 +64,14 @@ module FastSerializer
 
     undef :to_hash
     undef :to_h
-    alias :to_a :as_json
+    alias_method :to_a, :as_json
 
     protected
 
     def load_from_cache
       if cache
-        values = cache.fetch_all(array, cache_ttl){|serializer| serializer.as_json}
-        {:array => values}
+        values = cache.fetch_all(array, cache_ttl) { |serializer| serializer.as_json }
+        {array: values}
       else
         load_hash
       end
@@ -79,11 +80,11 @@ module FastSerializer
     private
 
     def array
-      unless defined?(@_array)
+      if @_array.nil?
         serializer = option(:serializer)
         if serializer
           serializer_options = option(:serializer_options)
-          @_array = object.collect{|obj| serializer.new(obj, serializer_options)}
+          @_array = object.collect { |obj| serializer.new(obj, serializer_options) }
         else
           @_array = object
         end
