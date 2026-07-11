@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "set"
 
 describe FastSerializer::SerializedField do
   let(:field) { FastSerializer::SerializedField.new(:test) }
@@ -78,6 +79,14 @@ describe FastSerializer::SerializedField do
   it "should serialize an array of objects" do
     expect(field.serialize([model, model])).to eq([
       {id: 1, name: "foo", description: nil, number: nil},
+      {id: 1, name: "foo", description: nil, number: nil}
+    ])
+  end
+
+  it "should serialize a non-array enumerable of objects as an array" do
+    set = Set.new([1, model])
+    expect(field.serialize(set)).to eq([
+      1,
       {id: 1, name: "foo", description: nil, number: nil}
     ])
   end

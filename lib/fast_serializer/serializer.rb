@@ -75,7 +75,7 @@ module FastSerializer
       # Several options can be specified to control how the field is serialized.
       #
       # * as: Name to call the field in the serialized hash. Defaults to the same as the field name
-      #   (withany ? stripped off the end for boolean fields). This option can only be specified
+      #   (with any ? stripped off the end for boolean fields). This option can only be specified
       #   for a single field.
       #
       # * optional: Boolean flag indicating if the field is optional in the serialized value (defaults to false).
@@ -115,7 +115,7 @@ module FastSerializer
         end
         as = options.delete(:as)
         optional = options.delete(:optional) || false
-        delegate = options.delete(:delegate) || true
+        delegate = options.include?(:delegate) ? options.delete(:delegate) : true
         enumerable = options.delete(:enumerable) || false
         serializer = options.delete(:serializer)
         serializer_options = options.delete(:serializer_options)
@@ -205,7 +205,7 @@ module FastSerializer
         @cache_ttl = value
       end
 
-      # Get the cache implemtation used to store cacheable serializers.
+      # Get the cache implementation used to store cacheable serializers.
       #
       # @return [FastSerializer::Cache]
       def cache
@@ -271,6 +271,7 @@ module FastSerializer
         added = false
         serializable_fields.each do |existing_field|
           field_list << if existing_field.name == name
+            added = true
             field
           else
             existing_field
@@ -307,7 +308,7 @@ module FastSerializer
       @object = object
       @options = options
       @cache = options[:cache] if options
-      if @cache && defined?(ActiveSupport::Cache::Store) && cache.is_a?(ActiveSupport::Cache::Store)
+      if @cache && defined?(ActiveSupport::Cache::Store) && @cache.is_a?(ActiveSupport::Cache::Store)
         @cache = Cache::ActiveSupportCache.new(@cache)
       end
       @_serialized = nil
@@ -388,7 +389,7 @@ module FastSerializer
           condition = field.condition
           next if condition && !send(condition)
 
-          value = field.serialize(send(name), serializer_options(name))
+          value = field.serialize(send(name), field.serializer ? serializer_options(name) : nil)
           hash[name] = value
         end
       end
@@ -405,7 +406,7 @@ module FastSerializer
           include_options = include_options[name.to_sym]
           opts[:include] = include_options if include_options
         end
-        exclude_options = options[:exclude]
+        exclude_options = opts[:exclude]
         if exclude_options.is_a?(Hash)
           exclude_options = exclude_options[name.to_sym]
           opts[:exclude] = exclude_options if exclude_options
