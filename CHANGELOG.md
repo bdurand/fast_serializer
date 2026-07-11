@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Serialization no longer duplicates the options hash for fields without an associated serializer when `:include` or `:exclude` options are present.
+- Minimum required Ruby version is now 2.6.
 
 ## 1.1.4
 
