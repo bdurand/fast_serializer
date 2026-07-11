@@ -15,7 +15,7 @@ task :verify_release_branch do
   end
 end
 
-Rake::Task[:release].enhance([:verify_release_branch])
+Rake::Task[:release].prerequisites.prepend("verify_release_branch")
 
 require "rspec/core/rake_task"
 
