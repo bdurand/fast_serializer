@@ -56,6 +56,17 @@ describe FastSerializer::ArraySerializer do
     expect(serializer.to_a).to eq array
   end
 
+  it "should use the cache, ttl, and cacheable options set on the instance" do
+    cache = TestCache.new
+    model_1 = SimpleModel.new(id: 1, name: "foo")
+    model_2 = SimpleModel.new(id: 2, name: "bar")
+    serializer = FastSerializer::ArraySerializer.new([model_1, model_2], serializer: SimpleSerializer, cacheable: true, cache: cache, cache_ttl: 60)
+    expect(serializer.cacheable?).to eq true
+    expect(serializer.cache).to eq cache
+    expect(serializer.cache_ttl).to eq 60
+    expect(serializer.as_json).to eq [SimpleSerializer.new(model_1).as_json, SimpleSerializer.new(model_2).as_json]
+  end
+
   it "should pull cacheable serializers from a cache" do
     model_1 = SimpleModel.new(id: 1, name: "foo")
     model_2 = SimpleModel.new(id: 2, name: "bar")

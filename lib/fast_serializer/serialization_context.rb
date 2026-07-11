@@ -55,7 +55,7 @@ module FastSerializer
       unless serializer
         serializer = serializer_class.allocate
         serializer.send(:initialize, object, options)
-        @cache = {}
+        @cache ||= {}
         @cache[key] = serializer
       end
 

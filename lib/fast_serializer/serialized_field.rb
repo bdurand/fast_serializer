@@ -3,7 +3,7 @@
 module FastSerializer
   # Data structure used internally for maintaining a field to be serialized.
   class SerializedField
-    attr_reader :name, :condition
+    attr_reader :name, :condition, :serializer
 
     # Create a new serialized field.
     #
@@ -36,7 +36,6 @@ module FastSerializer
     # @return [Object] the serialized value
     def serialize(value, options = nil)
       if value && @serializer
-        serializer = nil
         serializer = if @enumerable
           ArraySerializer.new(value, serializer: @serializer, serializer_options: serializer_options(options))
         else
@@ -109,7 +108,7 @@ module FastSerializer
       hash = nil
       value.each do |k, v|
         val = serialize_value(v)
-        if val.object_id != v.object_id
+        unless val.equal?(v)
           hash ||= value.dup
           hash[k] = val
         end
@@ -121,9 +120,11 @@ module FastSerializer
       array = nil
       value.each_with_index do |v, i|
         val = serialize_value(v)
-        if val.object_id != v.object_id
-          array ||= value.dup
-          array[i] = val
+        if array
+          array << val
+        elsif !val.equal?(v)
+          array = value.first(i)
+          array << val
         end
       end
       array || value

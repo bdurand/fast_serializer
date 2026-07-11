@@ -29,4 +29,14 @@ describe FastSerializer::SerializationContext do
     expect(context.load(SimpleSerializer, SimpleModel.new(id: 2, name: "bar"), count: 1).object_id).to_not eq serializer.object_id
     expect(context.load(SimpleSerializer, object, count: 2).object_id).to_not eq serializer.object_id
   end
+
+  it "should keep serializers in the cache after loading other serializers" do
+    context = FastSerializer::SerializationContext.new
+    object = SimpleModel.new(id: 1, name: "foo")
+    other = SimpleModel.new(id: 2, name: "bar")
+
+    serializer = context.load(SimpleSerializer, object)
+    context.load(SimpleSerializer, other)
+    expect(context.load(SimpleSerializer, object).object_id).to eq serializer.object_id
+  end
 end

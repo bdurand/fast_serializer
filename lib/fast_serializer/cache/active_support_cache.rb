@@ -16,7 +16,7 @@ module FastSerializer
     end
 
     def fetch_all(serializers, ttl)
-      results = @cache.fetch_multi(*serializers) { |serializer| yield(serializer) }
+      results = @cache.fetch_multi(*serializers, expires_in: ttl) { |serializer| yield(serializer) }
       if results.is_a?(Hash)
         serializers.collect { |serializer| results[serializer] }
       else

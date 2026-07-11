@@ -34,10 +34,10 @@ module FastSerializer
       end
     end
 
-    # @return [Numeric, Boolean]
+    # @return [Numeric, nil]
     def cache_ttl
       if option(:cache_ttl)
-        true
+        option(:cache_ttl)
       elsif option(:serializer)
         option(:serializer).cache_ttl
       else
@@ -45,10 +45,10 @@ module FastSerializer
       end
     end
 
-    # @return [FastSerializer::Cache, Boolean]
+    # @return [FastSerializer::Cache, nil]
     def cache
-      if option(:cache)
-        true
+      if @cache
+        @cache
       elsif option(:serializer)
         option(:serializer).cache
       else
@@ -56,11 +56,9 @@ module FastSerializer
       end
     end
 
-    # @return [Hash]
+    # @return [Array, nil]
     def as_json(*args)
-      if array.nil?
-        nil
-      elsif array.empty?
+      if array.empty?
         []
       else
         super[:array]

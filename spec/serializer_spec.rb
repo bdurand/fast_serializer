@@ -162,4 +162,25 @@ describe FastSerializer::Serializer do
     expect(ConditionalSerializer.new(model, scope: :description).as_json).to eq({id: 1, description: "foobar"})
     expect(ConditionalSerializer.new(model, scope: :name).as_json).to eq({id: 1, name: "foo"})
   end
+
+  it "should not define a delegate method when the delegate option is false" do
+    serializer_class = Class.new do
+      include FastSerializer::Serializer
+
+      serialize :name, delegate: false
+    end
+    expect(serializer_class.method_defined?(:name)).to eq false
+  end
+
+  it "should replace rather than duplicate a field that is defined again" do
+    serializer_class = Class.new do
+      include FastSerializer::Serializer
+
+      serialize :name
+      serialize :name, optional: true
+    end
+    fields = serializer_class.serializable_fields
+    expect(fields.size).to eq 1
+    expect(fields.first.optional?).to eq true
+  end
 end
