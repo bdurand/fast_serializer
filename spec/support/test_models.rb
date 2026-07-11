@@ -85,5 +85,6 @@ end
 
 class SubCacheSerializerGlobalInheritTest
   include FastSerializer::Serializer
+
   cacheable
 end

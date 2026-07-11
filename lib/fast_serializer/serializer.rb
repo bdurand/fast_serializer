@@ -258,7 +258,7 @@ module FastSerializer
       def add_field(name, optional:, serializer:, serializer_options:, enumerable:, condition:)
         name = name.to_sym
         if condition.is_a?(Proc)
-          include_method_name = "__include_#{name}?".to_sym
+          include_method_name = :"__include_#{name}?"
           define_method(include_method_name, condition)
           private include_method_name
           condition = include_method_name
