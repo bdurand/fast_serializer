@@ -4,6 +4,12 @@ ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../Gemfile", __dir__)
 
 require "bundler/setup" if File.exist?(ENV["BUNDLE_GEMFILE"])
 
+# Needed for loading Rails 6.x and 7.0
+begin
+  require "logger"
+rescue LoadError
+end
+
 begin
   require "simplecov"
   SimpleCov.start do

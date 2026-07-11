@@ -7,17 +7,19 @@ module FastSerializer
   # To define what fields to serialize on the wrapped object, the serializer class must call the +serialize+
   # class method:
   #
+  # @example Defining a basic serializer
   #   class PersonSerializer
   #     include FastSerializer::Serializer
   #     serialize :id, :name
   #   end
   #
-  # This sample serializer will output an object as a hash with keys {:id, :name}. The values for each field
+  # This sample serializer will output an object as a hash with the keys +:id+ and +:name+. The values for each field
   # is gotten by calling the corresponding method on the serializer object. By default, each serialized field
   # will automatically define a method that simply delegates to the wrapped object. So if you need provide special
   # handling for a field or serialize a virtual field that doesn't exist on the parent object, you just need to
   # implement the method on the serializer.
   #
+  # @example Defining a virtual field
   #   class PersonSerializer
   #     include FastSerializer::Serializer
   #     serialize :id, :name
@@ -29,6 +31,7 @@ module FastSerializer
   #
   # Serializers can implement their own options for controlling details about how to serialize the object.
   #
+  # @example Defining a serializer with custom options
   #   class PersonSerializer
   #     include FastSerializer::Serializer
   #     serialize :id, :name
