@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe FastSerializer::ArraySerializer do
+RSpec.describe FastSerializer::ArraySerializer do
   it "should serialize an array of regular objects" do
     array = [1, 2, 3]
     serializer = FastSerializer::ArraySerializer.new(array)

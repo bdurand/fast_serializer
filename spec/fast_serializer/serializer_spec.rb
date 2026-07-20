@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe FastSerializer::Serializer do
+RSpec.describe FastSerializer::Serializer do
   let(:model) { SimpleModel.new(id: 1, name: "foo", description: "foobar", number: 12) }
 
   it "should serialize object to JSON compatible format" do

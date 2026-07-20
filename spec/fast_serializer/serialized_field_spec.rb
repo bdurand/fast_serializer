@@ -3,7 +3,7 @@
 require "spec_helper"
 require "set"
 
-describe FastSerializer::SerializedField do
+RSpec.describe FastSerializer::SerializedField do
   let(:field) { FastSerializer::SerializedField.new(:test) }
   let(:model) { SimpleModel.new(id: 1, name: "foo") }
 

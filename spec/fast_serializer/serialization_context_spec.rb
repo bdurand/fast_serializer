@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe FastSerializer::SerializationContext do
+RSpec.describe FastSerializer::SerializationContext do
   it "should get a single context only within a block" do
     expect(FastSerializer::SerializationContext.current).to eq nil
     FastSerializer::SerializationContext.use do

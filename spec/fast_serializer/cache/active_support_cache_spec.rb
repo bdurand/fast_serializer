@@ -1,7 +1,7 @@
 require "spec_helper"
 
 if defined?(ActiveSupport)
-  describe FastSerializer::Cache::ActiveSupportCache do
+  RSpec.describe FastSerializer::Cache::ActiveSupportCache do
     it "should fetch from an ActiveSupport cache store" do
       cache_store = ActiveSupport::Cache::MemoryStore.new
       cache = FastSerializer::Cache::ActiveSupportCache.new(cache_store)
