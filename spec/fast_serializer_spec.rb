@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-describe FastSerializer do
+RSpec.describe FastSerializer do
   it "should be able to set and get a global cache" do
     expect(FastSerializer.cache).to eq nil
     begin
